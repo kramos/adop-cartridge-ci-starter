@@ -66,7 +66,7 @@ def stDeployJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + ap
 def stTestJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + '_ST_Test', variables + [
         'copyArtifactsFromJob': projectFolderName + '/' + appName + '_Build',
         'nextCopyArtifactsFromBuild': '${B}',
-        'triggerDownstreamJob': projectFolderName + '/Publish',
+        'triggerDownstreamJob': projectFolderName + '/' + appName + '_Publish',
         'jobDescription': 'This job runs the functional testing in the ST environment',
     ]
 )
@@ -79,7 +79,7 @@ try {
   lastJob = null
 }
 if ((downstreamName != null)) {
-    def publish = CartridgeHelper.getShellAuthJob(this, projectFolderName + '/' + appName + 'Publish', variables + [
+    def publish = CartridgeHelper.getShellAuthJob(this, projectFolderName + '/' + appName + '_Publish', variables + [
             'copyArtifactsFromJob': projectFolderName + '/' + appName + '_Build',
             'nextCopyArtifactsFromBuild': '${B}',
             'triggerDownstreamJob': projectFolderName + '/TODO',

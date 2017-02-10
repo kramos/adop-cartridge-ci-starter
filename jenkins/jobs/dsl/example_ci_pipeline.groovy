@@ -78,7 +78,7 @@ try {
 } catch (Exception e) {
   lastJob = null
 }
-if ((downstreamName != null)) {
+if ((downstreamName != null) && (downstreamName != 'null')) {
     def publish = CartridgeHelper.getShellAuthJob(this, projectFolderName + '/' + appName + '_Publish', variables + [
             'copyArtifactsFromJob': projectFolderName + '/' + appName + '_Build',
             'nextCopyArtifactsFromBuild': '${B}',

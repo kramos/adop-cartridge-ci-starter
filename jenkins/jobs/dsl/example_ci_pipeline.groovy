@@ -84,7 +84,7 @@ if ((downstreamName != null) && (downstreamName != 'null')) {
             'nextCopyArtifactsFromBuild': '${B}',
             'triggerDownstreamJob': projectFolderName + '/TODO',
             'jobDescription': 'This publishes a integration build candidate',
-            'jobCommand': 'FOLDER=`echo ' + projectFolderName + ''' | sed "s/\\//\\/job\\//g"`; 
+            'jobCommand': 'FOLDER=`echo ' + projectFolderName + ''' | sed "s/\\/[^/]\\+$//" | sed "s/\\//\\/job\\//g"`; 
                           |set +x
                           |echo TRIGGERING INTEGRATION BUILD 
                           |echo

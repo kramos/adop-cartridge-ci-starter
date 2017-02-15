@@ -76,7 +76,7 @@ def downstreamName
 try {
   downstreamName = "${DOWNSTREAM_FOLDER}"
 } catch (Exception e) {
-  lastJob = null
+  downstreamName = null
 }
 if ((downstreamName != null) && (downstreamName != 'null')) {
     def publish = CartridgeHelper.getShellAuthJob(this, projectFolderName + '/' + appName + '_Publish', variables + [
@@ -88,7 +88,7 @@ if ((downstreamName != null) && (downstreamName != 'null')) {
                           |set +x
                           |echo TRIGGERING INTEGRATION BUILD 
                           |echo
-                          |docker exec jenkins curl -s -X POST ${USERNAME_JENKINS}:${PASSWORD_JENKINS}@localhost:8080/jenkins/job/${FOLDER}/job/''' + downstreamName + '/job/Integrated_Build/buildWithParameters?COMPONENT_NAME=Integrated_Build\\&COMPONENT_BUILD_NUMBER=${B}',
+                          |docker exec jenkins curl -s -X POST ${USERNAME_JENKINS}:${PASSWORD_JENKINS}@localhost:8080/jenkins/job/${FOLDER}/job/''' + downstreamName + '/job/Integrated_Build/buildWithParameters?COMPONENT_NAME=' + appName + '\\&COMPONENT_BUILD_NUMBER=${B}',
         ]
     )
 }

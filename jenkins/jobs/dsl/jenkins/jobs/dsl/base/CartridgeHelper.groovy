@@ -170,25 +170,26 @@ class CartridgeHelper {
                 }
             }
         }
-
-        if (variables.containsKey("manualTrigger")) {
-            job.with {
-                publishers {
-                    buildPipelineTrigger(variables.triggerDownstreamJob) {
-                        parameters {
-                            predefinedProp('B', variables.nextCopyArtifactsFromBuild)
+        if variables.containsKey(triggerDownstreamJob) { 
+            if (variables.containsKey("manualTrigger")) {
+                job.with {
+                    publishers {
+                        buildPipelineTrigger(variables.triggerDownstreamJob) {
+                            parameters {
+                                predefinedProp('B', variables.nextCopyArtifactsFromBuild)
+                            }
                         }
                     }
                 }
-            }
-        } else {
-            job.with {
-                publishers {
-                    downstreamParameterized {
-                        trigger(variables.triggerDownstreamJob) {
-                            condition('UNSTABLE_OR_BETTER')
-                            parameters {
-                                predefinedProp('B', variables.nextCopyArtifactsFromBuild)
+            } else {
+                job.with {
+                    publishers {
+                        downstreamParameterized {
+                            trigger(variables.triggerDownstreamJob) {
+                                condition('UNSTABLE_OR_BETTER')
+                                parameters {
+                                    predefinedProp('B', variables.nextCopyArtifactsFromBuild)
+                                }
                             }
                         }
                     }
@@ -224,112 +225,6 @@ class CartridgeHelper {
    
         }
         return jobShellJob
-    }
-
-    /**
-     * Creates an integration job
-     *
-     * @job a base job that will be extended
-     * @jobName job name required
-     * @variables variables required configuration
-     */
-    static getIntegratedJob(dslFactory, jobName, variables) {
-
-        def jobIntjob = dslFactory.freeStyleJob(jobName) {
-            label(variables.buildSlave)
-            environmentVariables {
-                env('WORKSPACE_NAME', variables.workspaceFolderName)
-                env('PROJECT_NAME', variables.projectFolderName)
-                env('ABSOLUTE_JENKINS_HOME', variables.absoluteJenkinsHome)
-                env('ABSOLUTE_JENKINS_SLAVE_HOME', variables.absoluteJenkinsSlaveHome)
-                env('ABSOLUTE_WORKSPACE', variables.absoluteWorkspace)
-            }
-            wrappers {
-                sshAgent(variables.sshAgentName)
-                timestamps()
-                maskPasswords()
-                colorizeOutput()
-                injectPasswords {
-                    injectGlobalPasswords(false)
-                    maskPasswordParameters(true)
-                }
-            }
-            logRotator {
-                numToKeep(variables.logRotatorNum)
-                artifactNumToKeep(variables.logRotatorArtifactNum)
-                daysToKeep(variables.logRotatorDays)
-                artifactDaysToKeep(variables.logRotatorArtifactDays)
-            }
-
-            description(variables.jobDescription)
-            parameters {
-                stringParam('COMPONENT_NAME', '', 'Name of component being integrated')
-                stringParam('COMPONENT_BUILD_NUMBER', '', 'Build number of component being integrated')
-            }
-            steps {
-                shell('''#!/bin/bash -xe
-                        |echo Creating a new Integration build to include version: $COMPONENT_BUILD_NUMBER of component: $COMPONENT_NAME
-                        |
-                        |int_fn=integration.txt
-                        |set +e
-                        |rm ${JOB_BASE_NAME}_*.txt
-                        |grep "Created:" $int_fn 2>&1 /dev/null
-                        |if [ $? -ne 0 ]
-                        |then
-                        |        echo Created: `date` >> $int_fn
-                        |else
-                        |        sed -i -e "s/Created:.*/Created: `date`/" $int_fn
-                        |fi
-                        |
-                        |grep "${COMPONENT_NAME}[^\\s-]*=" $int_fn 2>&1 /dev/null
-                        |if [ $? -eq 0 ]
-                        |then
-                        |    sed -i -e "/${COMPONENT_NAME}[^\\s]*=.*/d" $int_fn
-                        |fi
-                        |set -e
-                        |
-                        |echo $COMPONENT_NAME=$COMPONENT_BUILD_NUMBER >> $int_fn
-                        |
-                        |echo
-                        |cat $int_fn
-                        |
-                        |cp $int_fn ${JOB_BASE_NAME}_${BUILD_NUMBER}.txt
-                        |'''.stripMargin())
-            }
-
-            publishers {
-                archiveArtifacts {
-                    pattern('**/*')
-                }
-            }
-        }
-
-        if (variables.containsKey("manualTrigger")) {
-            jobIntjob.with {
-                publishers {
-                    buildPipelineTrigger(variables.triggerDownstreamJob) {
-                        parameters {
-                            predefinedProp('B', variables.nextCopyArtifactsFromBuild)
-                        }
-                    }
-                }
-            }
-        } else {
-            jobIntjob.with {
-                publishers {
-                    downstreamParameterized {
-                        trigger(variables.triggerDownstreamJob) {
-                            condition('UNSTABLE_OR_BETTER')
-                            parameters {
-                                predefinedProp('B', variables.nextCopyArtifactsFromBuild)
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return jobIntjob
-
     }
 
     /**

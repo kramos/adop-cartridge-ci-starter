@@ -111,15 +111,14 @@ def unitTestJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + ap
         'triggerDownstreamJob': projectFolderName + '/' + appName + '_Reload',
         'jobDescription': 'This job runs any unit tests',
         'jobCommand': '''#!/bin/bash -xe
-                        |if [ -e "gradlew" ]
-                        |then
+                        |if [ -e "gradlew" ]; then
                         |    gradlew test
                         |fi''',
         'manualTrigger': 'true'
     ]
 )
 
-def reloadJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + ''_Reload', variables + [
+def reloadJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + '_Reload', variables + [
         'copyArtifactsFromJob': projectFolderName + '/' + appName + '_Build',
         'nextCopyArtifactsFromBuild': '${B}',
         'triggerDownstreamJob': projectFolderName + '/' + appName + 'NA',

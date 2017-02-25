@@ -170,7 +170,7 @@ class CartridgeHelper {
                 }
             }
         }
-        if (variables.containsKey(triggerDownstreamJob)) { 
+        if (variables.containsKey('triggerDownstreamJob')) { 
             if (variables.containsKey("manualTrigger")) {
                 job.with {
                     publishers {

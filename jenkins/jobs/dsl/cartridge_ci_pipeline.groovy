@@ -5,6 +5,14 @@ def workspaceFolderName = "${WORKSPACE_NAME}"
 def projectFolderName = "${PROJECT_NAME}/Cartridge_Management/cartridge_ci_pipeline"
 def appName = "Cartridge"
 
+// Creating folder to house the cartridge ci
+def FolderDisplayName = "cartridge_ci_pipeline"
+def FolderDescription = "CI pipeline for the cartridge"
+def cartridgeFolder = folder(projectFolderName) {
+  displayName(FolderDisplayName)
+  description(FolderDescription)
+}
+
 // Variables
 def variables = [
     gitUrl                  : 'ssh://jenkins@gerrit:29418/${GERRIT_PROJECT}',

@@ -18,7 +18,7 @@ def variables = [
     gitUrl                  : 'ssh://jenkins@gerrit:29418/${GERRIT_PROJECT}',
     gitBranch               : 'master',
     gitCredentials          : 'adop-jenkins-master',
-    gerritTriggerRegExp     : (projectFolderName + '/spring-music').replaceAll("/", "\\\\/"),
+    gerritTriggerRegExp     : (projectFolderName + '/adop-cartridge-ci-starter').replaceAll("/", "\\\\/"),
     projectNameKey          : (projectFolderName.toLowerCase().replace("/", "-")),
     buildSlave              : 'docker',
     artifactName            : 'adop-cartridge-ci-starter',
@@ -42,7 +42,7 @@ def pullSCM = CartridgeHelper.getBuildFromSCMJob(this, projectFolderName + '/Get
     ]
 )
 
-def validateJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + '_Build', variables + [
+def validateJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + '_Validate', variables + [
         'copyArtifactsFromJob': projectFolderName + '/Get_' + appName + '_Source_Code',
         'nextCopyArtifactsFromBuild': '${BUILD_NUMBER}',
         'triggerDownstreamJob': projectFolderName + '/' + appName + '_Unit_Test',
@@ -50,12 +50,6 @@ def validateJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + ap
         'jobCommand': '''#!/bin/bash -e
                         |echo
                         |echo
-                        |
-                        |# Checking for SDK version
-                        |if [ "$CARTRIDGE_SDK_VERSION" != "1.0" ]; then
-                        |  echo Sorry, CARTRIDGE_SDK_VERSION version $CARTRIDGE_SDK_VERSION is not supported by this job
-                        |  exit 1
-                        |fi
                         |
                         |# Checking for existence of files
                         |EXPECTEDFILES="README.md metadata.cartridge src/urls.txt"
@@ -71,7 +65,7 @@ def validateJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + ap
                         |done
                         |
                         |# Checking for existence of directories
-                        |EXPECTEDDIRS="infra jenkins jenkins/jobs jenkins/jobs/dsl jenkins/jobs/xml src .git"
+                        |EXPECTEDDIRS="infra jenkins jenkins/jobs jenkins/jobs/dsl jenkins/jobs/xml src"
                         |for var in ${EXPECTEDDIRS}
                         |do
                         |
@@ -114,22 +108,22 @@ def validateJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + ap
 )
 
 def unitTestJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + '_Unit_Test', variables + [
-        'copyArtifactsFromJob': projectFolderName + '/' + appName + '_Build',
+        'copyArtifactsFromJob': projectFolderName + '/Get_' + appName + '_Source_Code',
         'nextCopyArtifactsFromBuild': '${B}',
         'triggerDownstreamJob': projectFolderName + '/' + appName + '_Reload',
         'jobDescription': 'This job runs any unit tests',
         'jobCommand': '''#!/bin/bash -xe
                         |if [ -e "gradlew" ]; then
-                        |    gradlew test
+                        |chmod +x ./gradlew
+                        |    ./gradlew test
                         |fi''',
         'manualTrigger': 'true'
     ]
 )
 
 def reloadJob = CartridgeHelper.getShellJob(this, projectFolderName + '/' + appName + '_Reload', variables + [
-        'copyArtifactsFromJob': projectFolderName + '/' + appName + '_Build',
+        'copyArtifactsFromJob': projectFolderName + '/Get_' + appName + '_Source_Code',
         'nextCopyArtifactsFromBuild': '${B}',
-        'triggerDownstreamJob': projectFolderName + '/' + appName + 'NA',
         'jobDescription': 'This reloads the cartridge',
     ]
 )
